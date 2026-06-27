@@ -1,0 +1,41 @@
+/* Main background */
+.stApp {
+    background-color: #0E1117;
+}
+
+/* Search box */
+.stTextInput input {
+    border-radius: 12px;
+    border: 2px solid #3B82F6;
+    padding: 12px;
+}
+
+/* Sidebar */
+section[data-testid="stSidebar"] {
+    background-color: #161B22;
+}
+
+/* Product card */
+div[data-testid="stVerticalBlock"] {
+    border-radius: 12px;
+}
+
+/* Metric cards */
+div[data-testid="metric-container"] {
+    background-color: #1F2937;
+    border-radius: 12px;
+    padding: 15px;
+}
+
+/* Buttons */
+.stButton>button {
+    border-radius: 10px;
+    width: 100%;
+    background-color: #2563EB;
+    color: white;
+    border: none;
+}
+
+.stButton>button:hover {
+    background-color: #1D4ED8;
+}
