@@ -27,11 +27,18 @@ class ProductService:
             self.df["rating"],
             errors="coerce"
         )
+        self.df["ram"] = (
+            self.df["ram"]
+            .astype(str)
+            .str.extract(r'(\d+)')[0]
+        )
 
         self.df["ram"] = pd.to_numeric(
             self.df["ram"],
             errors="coerce"
         )
+
+
 
         self.df["memory_size"] = pd.to_numeric(
             self.df["memory_size"],

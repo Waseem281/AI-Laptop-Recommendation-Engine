@@ -95,9 +95,15 @@ processor_brand = st.sidebar.selectbox(
     ["All"] + sorted(df["processor_brand"].astype(str).unique())
 )
 
+ram_options = sorted(
+    df[df["ram"] > 0]["ram"]
+    .astype(int)
+    .unique()
+)
+
 ram = st.sidebar.selectbox(
     "RAM",
-    ["All"] + sorted(df["ram"].dropna().astype(int).astype(str).unique())
+    ["All"] + [str(x) for x in ram_options]
 )
 
 max_price = st.sidebar.slider(
@@ -137,28 +143,6 @@ query = st.text_input(
 
 st.session_state["last_query"] = query
 
-
-# =====================================================
-# QUICK SEARCHES
-# =====================================================
-
-st.markdown("### 🔥 Popular Searches")
-
-a, b, c, d = st.columns(4)
-
-if a.button("🎮 Gaming"):
-    query = "Gaming laptop"
-
-if b.button("👨‍💻 Coding"):
-    query = "Laptop for programming"
-
-if c.button("🤖 AI/ML"):
-    query = "Machine Learning Laptop"
-
-if d.button("📚 Student"):
-    query = "Student Laptop"
-
-
 # =====================================================
 # FILTER PRODUCTS
 # =====================================================
@@ -176,38 +160,75 @@ filtered = product_service.filter_products(
 # AI SEARCH
 # =====================================================
 
+# =====================================================
+# AI SEARCH
+# =====================================================
+
 if query:
 
     with st.spinner("🤖 AI is understanding your query..."):
 
         ai = parse_query(query)
 
-    with st.expander("AI Analysis"):
+    with st.expander("🧠 AI Analysis"):
         st.json(ai)
 
-    search_text = " ".join(
-        [
-            str(ai["purpose"]),
-            str(ai["processor"]),
-            str(ai["gpu"]),
-            str(ai["brand"])
-        ]
-    ).strip()
+    # ---------------------------------------------
+    # Intent Mapping
+    # ---------------------------------------------
 
-    if search_text == "":
-        search_text = query
+    query_lower = query.lower()
+
+    if "gaming" in query_lower:
+        search_text = "RTX NVIDIA Gaming Ryzen Intel 16GB"
+
+    elif "coding" in query_lower or "programming" in query_lower:
+        search_text = "Intel Ryzen 16GB SSD Windows"
+
+    elif "student" in query_lower:
+        search_text = "Intel Ryzen 8GB SSD Windows"
+
+    elif "office" in query_lower:
+        search_text = "Intel Windows SSD"
+
+    elif "video editing" in query_lower or "editing" in query_lower:
+        search_text = "RTX NVIDIA 32GB SSD"
+
+    else:
+        # Build search text from AI parser
+        search_text = " ".join([
+            str(ai.get("purpose", "")),
+            str(ai.get("processor", "")),
+            str(ai.get("gpu", "")),
+            str(ai.get("brand", ""))
+        ]).strip()
+
+        if search_text == "":
+            search_text = query
+
+    # ---------------------------------------------
+    # Recommendation
+    # ---------------------------------------------
 
     recommendations = recommendation_service.recommend(
         search_text,
         top_n=20
     )
 
-    if ai["budget"] != "":
+    # ---------------------------------------------
+    # Budget Filter
+    # ---------------------------------------------
+
+    if ai.get("budget") not in ["", None]:
         recommendations = recommendations[
             recommendations["price"] <= float(ai["budget"])
         ]
 
-    if ai["brand"] != "":
+    # ---------------------------------------------
+    # Brand Filter
+    # ---------------------------------------------
+
+    if ai.get("brand"):
         recommendations = recommendations[
             recommendations["brand"].str.lower()
             ==
@@ -215,7 +236,6 @@ if query:
         ]
 
     filtered = recommendations
-
 
 # =====================================================
 # SORTING
